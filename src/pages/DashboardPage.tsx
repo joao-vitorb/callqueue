@@ -1,4 +1,4 @@
-export default function App() {
+export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50">
       <div className="mx-auto w-full max-w-5xl px-4 py-10">
@@ -10,9 +10,8 @@ export default function App() {
         </header>
 
         <main className="mt-8 rounded-2xl border border-white/10 bg-zinc-900/40 p-4 shadow-sm">
-          {/* TODO: Criar a tabela de atendentes */}
-          {/* TODO: Criar os botões "Adicionar atendente" e "Realizar ligação" */}
-          {/* TODO: Criar ações por atendente (pausar, despausar, finalizar ligação, logout) */}
+          {/* TODO: Criar toolbar com botões (Adicionar atendente, Realizar ligação) */}
+          {/* TODO: Criar tabela de atendentes */}
         </main>
       </div>
     </div>
