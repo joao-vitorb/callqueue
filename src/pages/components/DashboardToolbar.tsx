@@ -1,11 +1,13 @@
 type Props = {
   onAddAttendant: () => void;
   onStartCall: () => void;
+  disableAdd?: boolean;
 };
 
 export default function DashboardToolbar({
   onAddAttendant,
   onStartCall,
+  disableAdd = false,
 }: Props) {
   return (
     <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -19,8 +21,9 @@ export default function DashboardToolbar({
       <div className="flex gap-2">
         <button
           type="button"
-          className="rounded-xl bg-white px-3 py-2 text-sm font-semibold text-zinc-950 transition hover:opacity-90"
+          className="rounded-xl bg-white px-3 py-2 text-sm font-semibold text-zinc-950 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           onClick={onAddAttendant}
+          disabled={disableAdd}
         >
           Adicionar atendente
         </button>

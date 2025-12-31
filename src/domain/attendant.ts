@@ -1,11 +1,11 @@
-export type AttendantId = string;
+export type AttendantCode = string;
 
 export type AttendantStatus = "AVAILABLE" | "IN_CALL" | "PAUSED";
 
 export type AttendantRole = "DEFAULT" | "PRIORITARIO" | "CONTINGENCIA";
 
 export type Attendant = {
-  id: AttendantId;
+  code: AttendantCode;
   firstName: string;
   lastName: string;
   status: AttendantStatus;

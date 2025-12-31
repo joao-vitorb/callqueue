@@ -29,9 +29,9 @@ export default function AttendantsTable({
         <tbody className="divide-y divide-white/10">
           {attendants.map((a) => (
             <tr
-              key={a.id}
+              key={a.code}
               className="cursor-pointer bg-zinc-950/20 transition hover:bg-white/5"
-              onClick={() => onSelectAttendant(a.id)}
+              onClick={() => onSelectAttendant(a.code)}
             >
               <td className="px-4 py-3">
                 <div className="flex flex-col">
@@ -41,7 +41,7 @@ export default function AttendantsTable({
                 </div>
               </td>
 
-              <td className="px-4 py-3 text-sm text-zinc-300">{a.id}</td>
+              <td className="px-4 py-3 text-sm text-zinc-300">{a.code}</td>
 
               <td className="px-4 py-3 text-sm text-zinc-200">
                 {ROLE_LABEL[a.role]}

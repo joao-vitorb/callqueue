@@ -4,7 +4,7 @@ import AttendantsTable from "./components/AttendantsTable";
 import DashboardToolbar from "./components/DashboardToolbar";
 import { nowMs } from "../shared/utils/time";
 import { generateUniqueName } from "../shared/utils/names";
-import { createId } from "../shared/utils/id";
+import { getMaxAttendants, getNextAvailableCode } from "../shared/utils/attendantCode";
 
 export default function DashboardPage() {
   const [attendants, setAttendants] = useState<Attendant[]>([]);
@@ -19,11 +19,14 @@ export default function DashboardPage() {
   );
 
   const handleAddAttendant = () => {
+    const nextCode = getNextAvailableCode(attendants);
+    if (!nextCode) return;
+
     const name = generateUniqueName(existingNames);
     const createdAt = nowMs();
 
     const attendant: Attendant = {
-      id: createId("u"),
+      code: nextCode,
       firstName: name.firstName,
       lastName: name.lastName,
       status: "AVAILABLE",
@@ -38,6 +41,8 @@ export default function DashboardPage() {
 
     setAttendants((prev) => [attendant, ...prev]);
   };
+
+  const maxReached = attendants.length >= getMaxAttendants();
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50">
@@ -56,6 +61,13 @@ export default function DashboardPage() {
               // TODO: implementar lógica de "Realizar ligação"
             }}
           />
+
+          {maxReached && (
+            <div className="mb-4 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
+              Limite máximo de 50 atendentes atingido.
+              {/* TODO: oferecer ação/explicação se necessário */}
+            </div>
+          )}
 
           <AttendantsTable
             attendants={attendants}
