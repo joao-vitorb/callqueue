@@ -4,7 +4,7 @@ import { formatDuration } from "../../shared/utils/time";
 
 type Props = {
   attendants: Attendant[];
-  onSelectAttendant: (attendantId: string) => void;
+  onSelectAttendant: (attendantCode: string) => void;
 };
 
 export default function AttendantsTable({
@@ -16,8 +16,8 @@ export default function AttendantsTable({
       <table className="w-full border-separate border-spacing-0">
         <thead>
           <tr className="bg-white/5 text-left text-xs uppercase tracking-wide text-zinc-300">
+            <th className="px-4 py-3">Código</th>
             <th className="px-4 py-3">Atendente</th>
-            <th className="px-4 py-3">Id</th>
             <th className="px-4 py-3">Função</th>
             <th className="px-4 py-3">Ociosidade</th>
             <th className="px-4 py-3">Ligação</th>
@@ -33,15 +33,18 @@ export default function AttendantsTable({
               className="cursor-pointer bg-zinc-950/20 transition hover:bg-white/5"
               onClick={() => onSelectAttendant(a.code)}
             >
+              <td className="px-4 py-3 text-sm text-zinc-300">{a.code}</td>
+
               <td className="px-4 py-3">
                 <div className="flex flex-col">
                   <span className="text-sm font-medium text-zinc-50">
                     {a.firstName} {a.lastName}
                   </span>
+                  <span className="text-xs text-zinc-400">
+                    {STATUS_LABEL[a.status]}
+                  </span>
                 </div>
               </td>
-
-              <td className="px-4 py-3 text-sm text-zinc-300">{a.code}</td>
 
               <td className="px-4 py-3 text-sm text-zinc-200">
                 {ROLE_LABEL[a.role]}

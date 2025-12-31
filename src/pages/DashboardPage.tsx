@@ -2,12 +2,20 @@ import { useMemo, useState } from "react";
 import type { Attendant } from "../domain/attendant";
 import AttendantsTable from "./components/AttendantsTable";
 import DashboardToolbar from "./components/DashboardToolbar";
+import AttendantActionsModal from "./components/AttendantActionsModal";
 import { nowMs } from "../shared/utils/time";
 import { generateUniqueName } from "../shared/utils/names";
 import { getMaxAttendants, getNextAvailableCode } from "../shared/utils/attendantCode";
+import { finishCall, pauseAttendant, resumeAttendant } from "../domain/attendantTransitions";
 
 export default function DashboardPage() {
   const [attendants, setAttendants] = useState<Attendant[]>([]);
+  const [selectedCode, setSelectedCode] = useState<string | null>(null);
+
+  const selectedAttendant = useMemo(
+    () => attendants.find((a) => a.code === selectedCode) ?? null,
+    [attendants, selectedCode]
+  );
 
   const existingNames = useMemo(
     () =>
@@ -42,6 +50,32 @@ export default function DashboardPage() {
     setAttendants((prev) => [attendant, ...prev]);
   };
 
+  const handleLogout = (code: string) => {
+    setAttendants((prev) => prev.filter((a) => a.code !== code));
+    setSelectedCode(null);
+  };
+
+  const handlePause = (code: string) => {
+    const now = nowMs();
+    setAttendants((prev) =>
+      prev.map((a) => (a.code === code ? pauseAttendant(a, now) : a))
+    );
+  };
+
+  const handleResume = (code: string) => {
+    const now = nowMs();
+    setAttendants((prev) =>
+      prev.map((a) => (a.code === code ? resumeAttendant(a, now) : a))
+    );
+  };
+
+  const handleFinishCall = (code: string) => {
+    const now = nowMs();
+    setAttendants((prev) =>
+      prev.map((a) => (a.code === code ? finishCall(a, now) : a))
+    );
+  };
+
   const maxReached = attendants.length >= getMaxAttendants();
 
   return (
@@ -60,19 +94,35 @@ export default function DashboardPage() {
             onStartCall={() => {
               // TODO: implementar lógica de "Realizar ligação"
             }}
+            disableAdd={maxReached}
           />
 
           {maxReached && (
             <div className="mb-4 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
               Limite máximo de 50 atendentes atingido.
-              {/* TODO: oferecer ação/explicação se necessário */}
             </div>
           )}
 
-          <AttendantsTable
-            attendants={attendants}
-            onSelectAttendant={() => {
-              // TODO: abrir menu/ações do atendente selecionado
+          <AttendantsTable attendants={attendants} onSelectAttendant={setSelectedCode} />
+
+          <AttendantActionsModal
+            attendant={selectedAttendant}
+            onClose={() => setSelectedCode(null)}
+            onLogout={() => {
+              if (!selectedAttendant) return;
+              handleLogout(selectedAttendant.code);
+            }}
+            onPause={() => {
+              if (!selectedAttendant) return;
+              handlePause(selectedAttendant.code);
+            }}
+            onResume={() => {
+              if (!selectedAttendant) return;
+              handleResume(selectedAttendant.code);
+            }}
+            onFinishCall={() => {
+              if (!selectedAttendant) return;
+              handleFinishCall(selectedAttendant.code);
             }}
           />
         </main>
