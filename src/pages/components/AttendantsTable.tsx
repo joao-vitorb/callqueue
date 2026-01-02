@@ -4,6 +4,7 @@ import { getCurrentStatusDurationMs } from "../../domain/attendantDuration";
 import { getLiveIdleMs } from "../../domain/attendantLive";
 import { formatDuration } from "../../shared/utils/time";
 import RoleIcon from "./RoleIcon";
+import FirstCallBadge from "./FirstCallBadge";
 
 type Props = {
   attendants: Attendant[];
@@ -48,7 +49,8 @@ export default function AttendantsTable({
 
                 <td className="px-4 py-3">
                   <div className="flex flex-col">
-                    <span className="text-sm font-medium text-zinc-50">
+                    <span className="flex items-center gap-2 text-sm font-medium text-zinc-50">
+                      <FirstCallBadge isVisible={a.handledCalls === 0} />
                       {a.firstName} {a.lastName}
                     </span>
 
