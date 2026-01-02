@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import type { Attendant } from "../domain/attendant";
-import AttendantsTable from "./components/AttendantsTable";
-import DashboardToolbar from "./components/DashboardToolbar";
+import AttendantsTable from "./components/AttendantsTable.tsx";
+import DashboardToolbar from "./components/DashboardToolbar.tsx";
 import AttendantActionsModal from "./components/AttendantActionsModal";
 import { nowMs } from "../shared/utils/time";
 import { generateUniqueName } from "../shared/utils/names";
 import { getMaxAttendants, getNextAvailableCode } from "../shared/utils/attendantCode";
 import { finishCall, pauseAttendant, resumeAttendant } from "../domain/attendantTransitions";
+import { useNow } from "../shared/hooks/useNow";
 
 export default function DashboardPage() {
   const [attendants, setAttendants] = useState<Attendant[]>([]);
@@ -78,6 +79,8 @@ export default function DashboardPage() {
 
   const maxReached = attendants.length >= getMaxAttendants();
 
+  const now = useNow({ intervalMs: 1000 });
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50">
       <div className="mx-auto w-full max-w-5xl px-4 py-10">
@@ -103,7 +106,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          <AttendantsTable attendants={attendants} onSelectAttendant={setSelectedCode} />
+          <AttendantsTable attendants={attendants} now={now} onSelectAttendant={setSelectedCode} />
 
           <AttendantActionsModal
             attendant={selectedAttendant}

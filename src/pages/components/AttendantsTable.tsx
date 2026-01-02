@@ -1,14 +1,17 @@
 import type { Attendant } from "../../domain/attendant";
 import { ROLE_LABEL, STATUS_LABEL } from "../../domain/attendant";
+import { getLiveCallMs, getLiveIdleMs, getLivePauseMs } from "../../domain/attendantLive";
 import { formatDuration } from "../../shared/utils/time";
 
 type Props = {
   attendants: Attendant[];
+  now: number;
   onSelectAttendant: (attendantCode: string) => void;
 };
 
 export default function AttendantsTable({
   attendants,
+  now,
   onSelectAttendant,
 }: Props) {
   return (
@@ -27,48 +30,54 @@ export default function AttendantsTable({
         </thead>
 
         <tbody className="divide-y divide-white/10">
-          {attendants.map((a) => (
-            <tr
-              key={a.code}
-              className="cursor-pointer bg-zinc-950/20 transition hover:bg-white/5"
-              onClick={() => onSelectAttendant(a.code)}
-            >
-              <td className="px-4 py-3 text-sm text-zinc-300">{a.code}</td>
+          {attendants.map((a) => {
+            const idleMs = getLiveIdleMs(a, now);
+            const callMs = getLiveCallMs(a, now);
+            const pauseMs = getLivePauseMs(a, now);
 
-              <td className="px-4 py-3">
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-zinc-50">
-                    {a.firstName} {a.lastName}
-                  </span>
-                  <span className="text-xs text-zinc-400">
+            return (
+              <tr
+                key={a.code}
+                className="cursor-pointer bg-zinc-950/20 transition hover:bg-white/5"
+                onClick={() => onSelectAttendant(a.code)}
+              >
+                <td className="px-4 py-3 text-sm text-zinc-300">{a.code}</td>
+
+                <td className="px-4 py-3">
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-zinc-50">
+                      {a.firstName} {a.lastName}
+                    </span>
+                    <span className="text-xs text-zinc-400">
+                      {STATUS_LABEL[a.status]}
+                    </span>
+                  </div>
+                </td>
+
+                <td className="px-4 py-3 text-sm text-zinc-200">
+                  {ROLE_LABEL[a.role]}
+                </td>
+
+                <td className="px-4 py-3 text-sm font-mono text-zinc-200">
+                  {formatDuration(idleMs)}
+                </td>
+
+                <td className="px-4 py-3 text-sm font-mono text-zinc-200">
+                  {formatDuration(callMs)}
+                </td>
+
+                <td className="px-4 py-3 text-sm font-mono text-zinc-200">
+                  {formatDuration(pauseMs)}
+                </td>
+
+                <td className="px-4 py-3">
+                  <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-zinc-200">
                     {STATUS_LABEL[a.status]}
                   </span>
-                </div>
-              </td>
-
-              <td className="px-4 py-3 text-sm text-zinc-200">
-                {ROLE_LABEL[a.role]}
-              </td>
-
-              <td className="px-4 py-3 text-sm text-zinc-200">
-                {formatDuration(a.idleMs)}
-              </td>
-
-              <td className="px-4 py-3 text-sm text-zinc-200">
-                {formatDuration(a.callMs)}
-              </td>
-
-              <td className="px-4 py-3 text-sm text-zinc-200">
-                {formatDuration(a.pauseMs)}
-              </td>
-
-              <td className="px-4 py-3">
-                <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-zinc-200">
-                  {STATUS_LABEL[a.status]}
-                </span>
-              </td>
-            </tr>
-          ))}
+                </td>
+              </tr>
+            );
+          })}
 
           {attendants.length === 0 && (
             <tr>
