@@ -18,6 +18,7 @@ import { useNow } from "../shared/hooks/useNow";
 import { selectNextAttendantCodeForCall } from "../domain/callRouting";
 import { startCall } from "../domain/attendantCall";
 import { loadAttendants, saveAttendants } from "../shared/utils/storage";
+import { getInactiveAttendantCodes } from "../domain/autoLogout.ts";
 
 export default function DashboardPage() {
   const [attendants, setAttendants] = useState<Attendant[]>(() =>
@@ -30,6 +31,19 @@ export default function DashboardPage() {
   }, [attendants]);
 
   const now = useNow({ intervalMs: 1000 });
+
+  useEffect(() => {
+    const inactiveCodes = getInactiveAttendantCodes(attendants, now);
+    if (inactiveCodes.length === 0) return;
+
+    const inactiveSet = new Set(inactiveCodes);
+
+    setAttendants((prev) => prev.filter((a) => !inactiveSet.has(a.code)));
+
+    if (selectedCode && inactiveSet.has(selectedCode)) {
+      setSelectedCode(null);
+    }
+  }, [now, attendants, selectedCode]);
 
   const selectedAttendant = useMemo(
     () => attendants.find((a) => a.code === selectedCode) ?? null,
