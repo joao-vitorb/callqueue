@@ -1,7 +1,10 @@
 import type { Attendant } from "./attendant";
 import { getLiveIdleMs } from "./attendantLive";
 
-function pickHighestIdle(candidates: Attendant[], now: number): Attendant | null {
+function pickHighestIdle(
+  candidates: Attendant[],
+  now: number
+): Attendant | null {
   if (candidates.length === 0) return null;
 
   let best: Attendant | null = null;

@@ -1,10 +1,10 @@
-import type { Attendant } from "../../domain/attendant";
-import { ROLE_LABEL, STATUS_LABEL } from "../../domain/attendant";
-import { getCurrentStatusDurationMs } from "../../domain/attendantDuration";
-import { getLiveIdleMs } from "../../domain/attendantLive";
-import { formatDuration } from "../../shared/utils/time";
-import RoleIcon from "./RoleIcon";
-import FirstCallBadge from "./FirstCallBadge";
+import type { Attendant } from "../../domain/attendant.ts";
+import { ROLE_LABEL, STATUS_LABEL } from "../../domain/attendant.ts";
+import { getCurrentStatusDurationMs } from "../../domain/attendantDuration.ts";
+import { getLiveIdleMs } from "../../domain/attendantLive.ts";
+import { formatDuration } from "../../shared/utils/time.ts";
+import RoleIcon from "./RoleIcon.tsx";
+import FirstCallBadge from "./FirstCallBadge.tsx";
 
 type Props = {
   attendants: Attendant[];

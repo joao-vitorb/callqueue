@@ -1,6 +1,6 @@
-import type { Attendant, AttendantRole } from "../../domain/attendant";
-import { ROLE_LABEL, STATUS_LABEL } from "../../domain/attendant";
-import RoleIcon from "./RoleIcon";
+import type { Attendant, AttendantRole } from "../../domain/attendant.ts";
+import { ROLE_LABEL, STATUS_LABEL } from "../../domain/attendant.ts";
+import RoleIcon from "./RoleIcon.tsx";
 
 type Props = {
   attendant: Attendant | null;

@@ -16,4 +16,3 @@ export function useNow(options: Options = {}): number {
 
   return now;
 }
-    

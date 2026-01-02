@@ -9,11 +9,19 @@ function applyElapsed(attendant: Attendant, now: number): Attendant {
   if (elapsed === 0) return attendant;
 
   if (attendant.status === "IN_CALL") {
-    return { ...attendant, callMs: attendant.callMs + elapsed, statusSince: now };
+    return {
+      ...attendant,
+      callMs: attendant.callMs + elapsed,
+      statusSince: now,
+    };
   }
 
   if (attendant.status === "PAUSED") {
-    return { ...attendant, pauseMs: attendant.pauseMs + elapsed, statusSince: now };
+    return {
+      ...attendant,
+      pauseMs: attendant.pauseMs + elapsed,
+      statusSince: now,
+    };
   }
 
   return { ...attendant, statusSince: now };

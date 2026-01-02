@@ -22,7 +22,6 @@ export type Attendant = {
   handledCalls: number;
 };
 
-
 export const STATUS_LABEL: Record<AttendantStatus, string> = {
   AVAILABLE: "Disponível",
   IN_CALL: "Atendendo",

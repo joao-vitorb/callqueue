@@ -29,18 +29,23 @@ function normalizeAttendant(raw: any, now: number): Attendant | null {
   const code = typeof raw.code === "string" ? raw.code : null;
   if (!code) return null;
 
-  const firstName = typeof raw.firstName === "string" ? raw.firstName : "Atendente";
+  const firstName =
+    typeof raw.firstName === "string" ? raw.firstName : "Atendente";
   const lastName = typeof raw.lastName === "string" ? raw.lastName : "";
 
   const statusRaw = raw.status;
   const status: Attendant["status"] =
-    statusRaw === "AVAILABLE" || statusRaw === "IN_CALL" || statusRaw === "PAUSED"
+    statusRaw === "AVAILABLE" ||
+    statusRaw === "IN_CALL" ||
+    statusRaw === "PAUSED"
       ? statusRaw
       : "AVAILABLE";
 
   const roleRaw = raw.role;
   const role: Attendant["role"] =
-    roleRaw === "DEFAULT" || roleRaw === "PRIORITARIO" || roleRaw === "CONTINGENCIA"
+    roleRaw === "DEFAULT" ||
+    roleRaw === "PRIORITARIO" ||
+    roleRaw === "CONTINGENCIA"
       ? roleRaw
       : "DEFAULT";
 
@@ -63,7 +68,9 @@ function normalizeAttendant(raw: any, now: number): Attendant | null {
   const callMs = nonNegative(isFiniteNumber(raw.callMs) ? raw.callMs : 0);
   const pauseMs = nonNegative(isFiniteNumber(raw.pauseMs) ? raw.pauseMs : 0);
 
-  const handledCallsRaw = isFiniteNumber(raw.handledCalls) ? raw.handledCalls : 0;
+  const handledCallsRaw = isFiniteNumber(raw.handledCalls)
+    ? raw.handledCalls
+    : 0;
   const handledCalls = nonNegative(Math.floor(handledCallsRaw));
 
   return {

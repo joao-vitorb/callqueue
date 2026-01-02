@@ -3,21 +3,21 @@ import type { Attendant, AttendantRole } from "../domain/attendant.ts";
 import AttendantsTable from "./components/AttendantsTable.tsx";
 import DashboardToolbar from "./components/DashboardToolbar.tsx";
 import AttendantActionsModal from "./components/AttendantActionsModal.tsx";
-import { nowMs } from "../shared/utils/time";
-import { generateUniqueName } from "../shared/utils/names";
+import { nowMs } from "../shared/utils/time.ts";
+import { generateUniqueName } from "../shared/utils/names.ts";
 import {
   getMaxAttendants,
   getNextAvailableCode,
-} from "../shared/utils/attendantCode";
+} from "../shared/utils/attendantCode.ts";
 import {
   finishCall,
   pauseAttendant,
   resumeAttendant,
-} from "../domain/attendantTransitions";
-import { useNow } from "../shared/hooks/useNow";
-import { selectNextAttendantCodeForCall } from "../domain/callRouting";
-import { startCall } from "../domain/attendantCall";
-import { loadAttendants, saveAttendants } from "../shared/utils/storage";
+} from "../domain/attendantTransitions.ts";
+import { useNow } from "../shared/hooks/useNow.ts";
+import { selectNextAttendantCodeForCall } from "../domain/callRouting.ts";
+import { startCall } from "../domain/attendantCall.ts";
+import { loadAttendants, saveAttendants } from "../shared/utils/storage.ts";
 import { getInactiveAttendantCodes } from "../domain/autoLogout.ts";
 
 export default function DashboardPage() {

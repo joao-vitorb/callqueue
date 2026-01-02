@@ -11,7 +11,9 @@ function randomInt(maxExclusive: number): number {
 
 export function generateUniqueName(existing: FullName[]): FullName {
   const existingKey = new Set(
-    existing.map((n) => `${n.firstName.toLowerCase()}|${n.lastName.toLowerCase()}`)
+    existing.map(
+      (n) => `${n.firstName.toLowerCase()}|${n.lastName.toLowerCase()}`
+    )
   );
 
   const firstNames = namesData.firstNames;
