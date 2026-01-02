@@ -1,6 +1,7 @@
 import type { Attendant } from "../../domain/attendant";
 import { ROLE_LABEL, STATUS_LABEL } from "../../domain/attendant";
-import { getLiveCallMs, getLiveIdleMs, getLivePauseMs } from "../../domain/attendantLive";
+import { getCurrentStatusDurationMs } from "../../domain/attendantDuration";
+import { getLiveIdleMs } from "../../domain/attendantLive";
 import { formatDuration } from "../../shared/utils/time";
 
 type Props = {
@@ -23,8 +24,7 @@ export default function AttendantsTable({
             <th className="px-4 py-3">Atendente</th>
             <th className="px-4 py-3">Função</th>
             <th className="px-4 py-3">Ociosidade</th>
-            <th className="px-4 py-3">Ligação</th>
-            <th className="px-4 py-3">Pausa</th>
+            <th className="px-4 py-3">Duração</th>
             <th className="px-4 py-3">Ação</th>
           </tr>
         </thead>
@@ -32,8 +32,10 @@ export default function AttendantsTable({
         <tbody className="divide-y divide-white/10">
           {attendants.map((a) => {
             const idleMs = getLiveIdleMs(a, now);
-            const callMs = getLiveCallMs(a, now);
-            const pauseMs = getLivePauseMs(a, now);
+            const durationMs = getCurrentStatusDurationMs(a, now);
+
+            const showIdle = a.status !== "IN_CALL";
+            const showDuration = a.status !== "AVAILABLE";
 
             return (
               <tr
@@ -59,15 +61,11 @@ export default function AttendantsTable({
                 </td>
 
                 <td className="px-4 py-3 text-sm font-mono text-zinc-200">
-                  {formatDuration(idleMs)}
+                  {showIdle ? formatDuration(idleMs) : ""}
                 </td>
 
                 <td className="px-4 py-3 text-sm font-mono text-zinc-200">
-                  {formatDuration(callMs)}
-                </td>
-
-                <td className="px-4 py-3 text-sm font-mono text-zinc-200">
-                  {formatDuration(pauseMs)}
+                  {showDuration ? formatDuration(durationMs) : ""}
                 </td>
 
                 <td className="px-4 py-3">
@@ -82,7 +80,7 @@ export default function AttendantsTable({
           {attendants.length === 0 && (
             <tr>
               <td
-                colSpan={7}
+                colSpan={6}
                 className="px-4 py-10 text-center text-sm text-zinc-400"
               >
                 Nenhum atendente logado.

@@ -42,6 +42,7 @@ export default function DashboardPage() {
       role: "DEFAULT",
       joinedAt: createdAt,
       statusSince: createdAt,
+      idleSince: createdAt,
       idleMs: 0,
       callMs: 0,
       pauseMs: 0,

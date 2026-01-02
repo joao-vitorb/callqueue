@@ -14,12 +14,14 @@ export type Attendant = {
   joinedAt: number;
   statusSince: number;
 
+  idleSince: number;
   idleMs: number;
   callMs: number;
   pauseMs: number;
 
   handledCalls: number;
 };
+
 
 export const STATUS_LABEL: Record<AttendantStatus, string> = {
   AVAILABLE: "Disponível",
