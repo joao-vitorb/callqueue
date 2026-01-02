@@ -3,6 +3,7 @@ import { ROLE_LABEL, STATUS_LABEL } from "../../domain/attendant";
 import { getCurrentStatusDurationMs } from "../../domain/attendantDuration";
 import { getLiveIdleMs } from "../../domain/attendantLive";
 import { formatDuration } from "../../shared/utils/time";
+import RoleIcon from "./RoleIcon";
 
 type Props = {
   attendants: Attendant[];
@@ -50,14 +51,18 @@ export default function AttendantsTable({
                     <span className="text-sm font-medium text-zinc-50">
                       {a.firstName} {a.lastName}
                     </span>
+
                     <span className="text-xs text-zinc-400">
                       {STATUS_LABEL[a.status]}
                     </span>
                   </div>
                 </td>
 
-                <td className="px-4 py-3 text-sm text-zinc-200">
-                  {ROLE_LABEL[a.role]}
+                <td className="px-4 py-3">
+                  <span className="flex items-center gap-2 text-sm text-zinc-200">
+                    <RoleIcon role={a.role} className="text-white" />
+                    {ROLE_LABEL[a.role]}
+                  </span>
                 </td>
 
                 <td className="px-4 py-3 text-sm font-mono text-zinc-200">

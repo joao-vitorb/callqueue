@@ -1,5 +1,6 @@
-import type { Attendant } from "../../domain/attendant";
+import type { Attendant, AttendantRole } from "../../domain/attendant";
 import { ROLE_LABEL, STATUS_LABEL } from "../../domain/attendant";
+import RoleIcon from "./RoleIcon";
 
 type Props = {
   attendant: Attendant | null;
@@ -8,6 +9,7 @@ type Props = {
   onPause: () => void;
   onResume: () => void;
   onFinishCall: () => void;
+  onSetRole: (role: AttendantRole) => void;
 };
 
 export default function AttendantActionsModal({
@@ -17,6 +19,7 @@ export default function AttendantActionsModal({
   onPause,
   onResume,
   onFinishCall,
+  onSetRole,
 }: Props) {
   if (!attendant) return null;
 
@@ -52,6 +55,74 @@ export default function AttendantActionsModal({
           >
             Fechar
           </button>
+        </div>
+
+        <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-zinc-300">
+            Função
+          </p>
+
+          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <button
+              type="button"
+              className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition ${
+                attendant.role === "DEFAULT"
+                  ? "bg-white text-zinc-950"
+                  : "border border-white/10 bg-white/5 text-zinc-50 hover:bg-white/10"
+              }`}
+              onClick={() => onSetRole("DEFAULT")}
+            >
+              <RoleIcon
+                role="DEFAULT"
+                className={
+                  attendant.role === "DEFAULT" ? "text-zinc-950" : "text-white"
+                }
+              />
+              {ROLE_LABEL.DEFAULT}
+            </button>
+
+            <button
+              type="button"
+              className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition ${
+                attendant.role === "PRIORITARIO"
+                  ? "bg-white text-zinc-950"
+                  : "border border-white/10 bg-white/5 text-zinc-50 hover:bg-white/10"
+              }`}
+              onClick={() => onSetRole("PRIORITARIO")}
+            >
+              <RoleIcon
+                role="PRIORITARIO"
+                className={
+                  attendant.role === "PRIORITARIO"
+                    ? "text-zinc-950"
+                    : "text-white"
+                }
+              />
+              {ROLE_LABEL.PRIORITARIO}
+            </button>
+
+            <button
+              type="button"
+              className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition ${
+                attendant.role === "CONTINGENCIA"
+                  ? "bg-white text-zinc-950"
+                  : "border border-white/10 bg-white/5 text-zinc-50 hover:bg-white/10"
+              }`}
+              onClick={() => onSetRole("CONTINGENCIA")}
+            >
+              <RoleIcon
+                role="CONTINGENCIA"
+                className={
+                  attendant.role === "CONTINGENCIA"
+                    ? "text-zinc-950"
+                    : "text-white"
+                }
+              />
+              {ROLE_LABEL.CONTINGENCIA}
+            </button>
+          </div>
+
+          {/* TODO: adicionar tooltip explicando prioridade das funções */}
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">

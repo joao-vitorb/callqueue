@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import type { Attendant } from "../domain/attendant";
+import type { Attendant, AttendantRole } from "../domain/attendant.ts";
 import AttendantsTable from "./components/AttendantsTable.tsx";
 import DashboardToolbar from "./components/DashboardToolbar.tsx";
-import AttendantActionsModal from "./components/AttendantActionsModal";
+import AttendantActionsModal from "./components/AttendantActionsModal.tsx";
 import { nowMs } from "../shared/utils/time";
 import { generateUniqueName } from "../shared/utils/names";
 import {
@@ -21,6 +21,8 @@ import { startCall } from "../domain/attendantCall";
 export default function DashboardPage() {
   const [attendants, setAttendants] = useState<Attendant[]>([]);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
+
+  const now = useNow({ intervalMs: 1000 });
 
   const selectedAttendant = useMemo(
     () => attendants.find((a) => a.code === selectedCode) ?? null,
@@ -61,45 +63,51 @@ export default function DashboardPage() {
     setAttendants((prev) => [attendant, ...prev]);
   };
 
+  const handleStartCall = () => {
+    setAttendants((prev) => {
+      const nowLocal = nowMs();
+      const nextCode = selectNextAttendantCodeForCall(prev, nowLocal);
+      if (!nextCode) return prev;
+
+      return prev.map((a) =>
+        a.code === nextCode ? startCall(a, nowLocal) : a
+      );
+    });
+  };
+
   const handleLogout = (code: string) => {
     setAttendants((prev) => prev.filter((a) => a.code !== code));
     setSelectedCode(null);
   };
 
   const handlePause = (code: string) => {
-    const now = nowMs();
+    const nowLocal = nowMs();
     setAttendants((prev) =>
-      prev.map((a) => (a.code === code ? pauseAttendant(a, now) : a))
+      prev.map((a) => (a.code === code ? pauseAttendant(a, nowLocal) : a))
     );
   };
 
   const handleResume = (code: string) => {
-    const now = nowMs();
+    const nowLocal = nowMs();
     setAttendants((prev) =>
-      prev.map((a) => (a.code === code ? resumeAttendant(a, now) : a))
+      prev.map((a) => (a.code === code ? resumeAttendant(a, nowLocal) : a))
     );
   };
 
   const handleFinishCall = (code: string) => {
-    const now = nowMs();
+    const nowLocal = nowMs();
     setAttendants((prev) =>
-      prev.map((a) => (a.code === code ? finishCall(a, now) : a))
+      prev.map((a) => (a.code === code ? finishCall(a, nowLocal) : a))
+    );
+  };
+
+  const handleSetRole = (code: string, role: AttendantRole) => {
+    setAttendants((prev) =>
+      prev.map((a) => (a.code === code ? { ...a, role } : a))
     );
   };
 
   const maxReached = attendants.length >= getMaxAttendants();
-
-  const now = useNow({ intervalMs: 1000 });
-
-  const handleStartCall = () => {
-    setAttendants((prev) => {
-      const now = nowMs();
-      const nextCode = selectNextAttendantCodeForCall(prev, now);
-      if (!nextCode) return prev;
-
-      return prev.map((a) => (a.code === nextCode ? startCall(a, now) : a));
-    });
-  };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50">
@@ -148,6 +156,10 @@ export default function DashboardPage() {
             onFinishCall={() => {
               if (!selectedAttendant) return;
               handleFinishCall(selectedAttendant.code);
+            }}
+            onSetRole={(role) => {
+              if (!selectedAttendant) return;
+              handleSetRole(selectedAttendant.code, role);
             }}
           />
         </main>
