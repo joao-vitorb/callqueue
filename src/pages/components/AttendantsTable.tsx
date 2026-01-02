@@ -6,6 +6,12 @@ import { formatDuration } from "../../shared/utils/time.ts";
 import RoleIcon from "./RoleIcon.tsx";
 import FirstCallBadge from "./FirstCallBadge.tsx";
 
+function getStatusBadgeClasses(status: Attendant["status"]): string {
+  if (status === "AVAILABLE") return "bg-[#83fa70] text-zinc-950";
+  if (status === "PAUSED") return "bg-[#50b6fa] text-zinc-950";
+  return "bg-[#ffd86b] text-zinc-950";
+}
+
 type Props = {
   attendants: Attendant[];
   now: number;
@@ -76,7 +82,11 @@ export default function AttendantsTable({
                 </td>
 
                 <td className="px-4 py-3">
-                  <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-zinc-200">
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ${getStatusBadgeClasses(
+                      a.status
+                    )}`}
+                  >
                     {STATUS_LABEL[a.status]}
                   </span>
                 </td>
