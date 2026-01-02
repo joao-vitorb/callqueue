@@ -5,9 +5,18 @@ import DashboardToolbar from "./components/DashboardToolbar.tsx";
 import AttendantActionsModal from "./components/AttendantActionsModal";
 import { nowMs } from "../shared/utils/time";
 import { generateUniqueName } from "../shared/utils/names";
-import { getMaxAttendants, getNextAvailableCode } from "../shared/utils/attendantCode";
-import { finishCall, pauseAttendant, resumeAttendant } from "../domain/attendantTransitions";
+import {
+  getMaxAttendants,
+  getNextAvailableCode,
+} from "../shared/utils/attendantCode";
+import {
+  finishCall,
+  pauseAttendant,
+  resumeAttendant,
+} from "../domain/attendantTransitions";
 import { useNow } from "../shared/hooks/useNow";
+import { selectNextAttendantCodeForCall } from "../domain/callRouting";
+import { startCall } from "../domain/attendantCall";
 
 export default function DashboardPage() {
   const [attendants, setAttendants] = useState<Attendant[]>([]);
@@ -82,6 +91,16 @@ export default function DashboardPage() {
 
   const now = useNow({ intervalMs: 1000 });
 
+  const handleStartCall = () => {
+    setAttendants((prev) => {
+      const now = nowMs();
+      const nextCode = selectNextAttendantCodeForCall(prev, now);
+      if (!nextCode) return prev;
+
+      return prev.map((a) => (a.code === nextCode ? startCall(a, now) : a));
+    });
+  };
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50">
       <div className="mx-auto w-full max-w-5xl px-4 py-10">
@@ -95,9 +114,7 @@ export default function DashboardPage() {
         <main className="mt-8 rounded-2xl border border-white/10 bg-zinc-900/40 p-4 shadow-sm">
           <DashboardToolbar
             onAddAttendant={handleAddAttendant}
-            onStartCall={() => {
-              // TODO: implementar lógica de "Realizar ligação"
-            }}
+            onStartCall={handleStartCall}
             disableAdd={maxReached}
           />
 
@@ -107,7 +124,11 @@ export default function DashboardPage() {
             </div>
           )}
 
-          <AttendantsTable attendants={attendants} now={now} onSelectAttendant={setSelectedCode} />
+          <AttendantsTable
+            attendants={attendants}
+            now={now}
+            onSelectAttendant={setSelectedCode}
+          />
 
           <AttendantActionsModal
             attendant={selectedAttendant}
