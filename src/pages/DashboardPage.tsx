@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Attendant, AttendantRole } from "../domain/attendant.ts";
 import AttendantsTable from "./components/AttendantsTable.tsx";
 import DashboardToolbar from "./components/DashboardToolbar.tsx";
@@ -17,10 +17,17 @@ import {
 import { useNow } from "../shared/hooks/useNow";
 import { selectNextAttendantCodeForCall } from "../domain/callRouting";
 import { startCall } from "../domain/attendantCall";
+import { loadAttendants, saveAttendants } from "../shared/utils/storage";
 
 export default function DashboardPage() {
-  const [attendants, setAttendants] = useState<Attendant[]>([]);
+  const [attendants, setAttendants] = useState<Attendant[]>(() =>
+    loadAttendants()
+  );
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    saveAttendants(attendants);
+  }, [attendants]);
 
   const now = useNow({ intervalMs: 1000 });
 
