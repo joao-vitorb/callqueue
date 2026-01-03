@@ -16,3 +16,11 @@ export function formatDuration(totalMs: number): string {
 export function nowMs(): number {
   return Date.now();
 }
+
+export function formatClockTime(timestampMs: number): string {
+  const d = new Date(timestampMs);
+  return new Intl.DateTimeFormat(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(d);
+}

@@ -161,6 +161,7 @@ export default function DashboardPage() {
 
           <AttendantActionsModal
             attendant={selectedAttendant}
+            now={now}
             onClose={() => setSelectedCode(null)}
             onLogout={() => {
               if (!selectedAttendant) return;
