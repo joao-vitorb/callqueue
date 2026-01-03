@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum AttendantStatus {
+  AVAILABLE
+  IN_CALL
+  PAUSED
+}
+
+enum AttendantRole {
+  DEFAULT
+  PRIORITARIO
+  CONTINGENCIA
+}
+
+model Attendant {
+  code         String          @id
+  firstName    String
+  lastName     String
+  status       AttendantStatus @default(AVAILABLE)
+  role         AttendantRole   @default(DEFAULT)
+
+  joinedAt     BigInt
+  statusSince  BigInt
+  idleSince    BigInt
+
+  idleMs       BigInt          @default(0)
+  callMs       BigInt          @default(0)
+  pauseMs      BigInt          @default(0)
+
+  handledCalls Int             @default(0)
+
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
