@@ -1,7 +1,11 @@
-import { Injectable, BadRequestException } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { generateUniqueName } from "../shared/utils/names";
-import { getNextAvailableCode } from "../shared/utils/attendantCode";
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { generateUniqueName } from '../shared/utils/names';
+import { getNextAvailableCode } from '../shared/utils/attendantCode';
 
 function nowMs(): bigint {
   return BigInt(Date.now());
@@ -12,22 +16,22 @@ export class AttendantsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async list() {
-    return this.prisma.attendant.findMany({ orderBy: { code: "asc" } });
+    return this.prisma.attendant.findMany({ orderBy: { code: 'asc' } });
   }
 
   async createRandom() {
     const existing = await this.prisma.attendant.findMany({
       select: { code: true, firstName: true, lastName: true },
-      orderBy: { code: "asc" },
+      orderBy: { code: 'asc' },
     });
 
     const nextCode = getNextAvailableCode(existing);
     if (!nextCode) {
-      throw new BadRequestException("Limite máximo de 50 atendentes atingido.");
+      throw new BadRequestException('Limite máximo de 50 atendentes atingido.');
     }
 
     const name = generateUniqueName(
-      existing.map((a) => ({ firstName: a.firstName, lastName: a.lastName }))
+      existing.map((a) => ({ firstName: a.firstName, lastName: a.lastName })),
     );
 
     const createdAt = nowMs();
@@ -37,8 +41,8 @@ export class AttendantsService {
         code: nextCode,
         firstName: name.firstName,
         lastName: name.lastName,
-        status: "AVAILABLE",
-        role: "DEFAULT",
+        status: 'AVAILABLE',
+        role: 'DEFAULT',
         joinedAt: createdAt,
         statusSince: createdAt,
         idleSince: createdAt,
@@ -51,7 +55,21 @@ export class AttendantsService {
   }
 
   async remove(code: string) {
-    // TODO: implementar logout
-    throw new Error("TODO");
+    if (!code || code.trim().length === 0) {
+      throw new BadRequestException('Código inválido.');
+    }
+
+    const exists = await this.prisma.attendant.findUnique({
+      where: { code },
+      select: { code: true },
+    });
+
+    if (!exists) {
+      throw new NotFoundException('Atendente não encontrado.');
+    }
+
+    await this.prisma.attendant.delete({ where: { code } });
+
+    return { ok: true };
   }
 }
