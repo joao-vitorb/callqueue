@@ -1,4 +1,4 @@
-import { Controller, Get } from "@nestjs/common";
+import { Controller, Get, Post } from "@nestjs/common";
 import { AttendantsService } from "./attendants.service";
 
 @Controller("attendants")
@@ -8,5 +8,10 @@ export class AttendantsController {
   @Get()
   async list() {
     return this.service.list();
+  }
+
+  @Post()
+  async create() {
+    return this.service.createRandom();
   }
 }
