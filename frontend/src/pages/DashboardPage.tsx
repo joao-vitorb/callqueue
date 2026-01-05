@@ -5,6 +5,7 @@ import DashboardToolbar from "./components/DashboardToolbar.tsx";
 import AttendantActionsModal from "./components/AttendantActionsModal.tsx";
 import { useNow } from "../shared/hooks/useNow.ts";
 import { callqueueApi } from "../shared/api/callqueueApi.ts";
+import { connectEvents } from "../shared/api/events.ts";
 
 export default function DashboardPage() {
   const [attendants, setAttendants] = useState<Attendant[]>([]);
@@ -40,11 +41,16 @@ export default function DashboardPage() {
   useEffect(() => {
     refresh();
 
-    const id = window.setInterval(() => {
-      refresh();
-    }, 2000);
+    const disconnect = connectEvents({
+      onMessage: (evt) => {
+        if (evt.type === "ATTENDANTS_CHANGED") refresh();
+      },
+      onStatusChange: (status) => {
+        console.log("SSE:", status);
+      },
+    });
 
-    return () => window.clearInterval(id);
+    return () => disconnect();
   }, [refresh]);
 
   const handleAddAttendant = async () => {
