@@ -1,134 +1,124 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Attendant, AttendantRole } from "../domain/attendant.ts";
 import AttendantsTable from "./components/AttendantsTable.tsx";
 import DashboardToolbar from "./components/DashboardToolbar.tsx";
 import AttendantActionsModal from "./components/AttendantActionsModal.tsx";
-import { nowMs } from "../shared/utils/time.ts";
-import { generateUniqueName } from "../shared/utils/names.ts";
-import {
-  getMaxAttendants,
-  getNextAvailableCode,
-} from "../shared/utils/attendantCode.ts";
-import {
-  finishCall,
-  pauseAttendant,
-  resumeAttendant,
-} from "../domain/attendantTransitions.ts";
 import { useNow } from "../shared/hooks/useNow.ts";
-import { selectNextAttendantCodeForCall } from "../domain/callRouting.ts";
-import { startCall } from "../domain/attendantCall.ts";
-import { loadAttendants, saveAttendants } from "../shared/utils/storage.ts";
-import { getInactiveAttendantCodes } from "../domain/autoLogout.ts";
+import { callqueueApi } from "../shared/api/callqueueApi.ts";
 
 export default function DashboardPage() {
-  const [attendants, setAttendants] = useState<Attendant[]>(() =>
-    loadAttendants()
-  );
+  const [attendants, setAttendants] = useState<Attendant[]>([]);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
-
-  useEffect(() => {
-    saveAttendants(attendants);
-  }, [attendants]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const now = useNow({ intervalMs: 1000 });
-
-  useEffect(() => {
-    const inactiveCodes = getInactiveAttendantCodes(attendants, now);
-    if (inactiveCodes.length === 0) return;
-
-    const inactiveSet = new Set(inactiveCodes);
-
-    setAttendants((prev) => prev.filter((a) => !inactiveSet.has(a.code)));
-
-    if (selectedCode && inactiveSet.has(selectedCode)) {
-      setSelectedCode(null);
-    }
-  }, [now, attendants, selectedCode]);
 
   const selectedAttendant = useMemo(
     () => attendants.find((a) => a.code === selectedCode) ?? null,
     [attendants, selectedCode]
   );
 
-  const existingNames = useMemo(
-    () =>
-      attendants.map((a) => ({
-        firstName: a.firstName,
-        lastName: a.lastName,
-      })),
-    [attendants]
-  );
+  const refresh = useCallback(async () => {
+    try {
+      const data = await callqueueApi.listAttendants();
+      setAttendants(data);
 
-  const handleAddAttendant = () => {
-    const nextCode = getNextAvailableCode(attendants);
-    if (!nextCode) return;
+      setSelectedCode((prev) => {
+        if (!prev) return null;
+        return data.some((a) => a.code === prev) ? prev : null;
+      });
 
-    const name = generateUniqueName(existingNames);
-    const createdAt = nowMs();
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao carregar atendentes");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-    const attendant: Attendant = {
-      code: nextCode,
-      firstName: name.firstName,
-      lastName: name.lastName,
-      status: "AVAILABLE",
-      role: "DEFAULT",
-      joinedAt: createdAt,
-      statusSince: createdAt,
-      idleSince: createdAt,
-      idleMs: 0,
-      callMs: 0,
-      pauseMs: 0,
-      handledCalls: 0,
-    };
+  useEffect(() => {
+    refresh();
 
-    setAttendants((prev) => [attendant, ...prev]);
+    const id = window.setInterval(() => {
+      refresh();
+    }, 2000);
+
+    return () => window.clearInterval(id);
+  }, [refresh]);
+
+  const handleAddAttendant = async () => {
+    try {
+      await callqueueApi.addAttendant();
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao adicionar atendente");
+      // TODO: exibir feedback mais amigável (toast/inline)
+    }
   };
 
-  const handleStartCall = () => {
-    setAttendants((prev) => {
-      const nowLocal = nowMs();
-      const nextCode = selectNextAttendantCodeForCall(prev, nowLocal);
-      if (!nextCode) return prev;
-
-      return prev.map((a) =>
-        a.code === nextCode ? startCall(a, nowLocal) : a
-      );
-    });
+  const handleStartCall = async () => {
+    try {
+      await callqueueApi.startCall();
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao iniciar ligação");
+      // TODO: exibir feedback mais amigável (toast/inline)
+    }
   };
 
-  const handleLogout = (code: string) => {
-    setAttendants((prev) => prev.filter((a) => a.code !== code));
-    setSelectedCode(null);
+  const handleLogout = async (code: string) => {
+    try {
+      await callqueueApi.logout(code);
+      setSelectedCode(null);
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao fazer logout");
+      // TODO: exibir feedback mais amigável (toast/inline)
+    }
   };
 
-  const handlePause = (code: string) => {
-    const nowLocal = nowMs();
-    setAttendants((prev) =>
-      prev.map((a) => (a.code === code ? pauseAttendant(a, nowLocal) : a))
-    );
+  const handlePause = async (code: string) => {
+    try {
+      await callqueueApi.pause(code);
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao pausar");
+      // TODO: exibir feedback mais amigável (toast/inline)
+    }
   };
 
-  const handleResume = (code: string) => {
-    const nowLocal = nowMs();
-    setAttendants((prev) =>
-      prev.map((a) => (a.code === code ? resumeAttendant(a, nowLocal) : a))
-    );
+  const handleResume = async (code: string) => {
+    try {
+      await callqueueApi.resume(code);
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao despausar");
+      // TODO: exibir feedback mais amigável (toast/inline)
+    }
   };
 
-  const handleFinishCall = (code: string) => {
-    const nowLocal = nowMs();
-    setAttendants((prev) =>
-      prev.map((a) => (a.code === code ? finishCall(a, nowLocal) : a))
-    );
+  const handleFinishCall = async (code: string) => {
+    try {
+      await callqueueApi.finishCall(code);
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao finalizar ligação");
+      // TODO: exibir feedback mais amigável (toast/inline)
+    }
   };
 
-  const handleSetRole = (code: string, role: AttendantRole) => {
-    setAttendants((prev) =>
-      prev.map((a) => (a.code === code ? { ...a, role } : a))
-    );
+  const handleSetRole = async (code: string, role: AttendantRole) => {
+    try {
+      await callqueueApi.setRole(code, role);
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao alterar função");
+      // TODO: exibir feedback mais amigável (toast/inline)
+    }
   };
 
-  const maxReached = attendants.length >= getMaxAttendants();
+  const maxReached = attendants.length >= 50;
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50">
@@ -141,6 +131,13 @@ export default function DashboardPage() {
         </header>
 
         <main className="mt-8 rounded-2xl border border-white/10 bg-zinc-900/40 p-4 shadow-sm">
+          {error && (
+            <div className="mb-4 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+              {error}
+              {/* TODO: botão "Tentar novamente" chamando refresh() */}
+            </div>
+          )}
+
           <DashboardToolbar
             onAddAttendant={handleAddAttendant}
             onStartCall={handleStartCall}
@@ -153,11 +150,18 @@ export default function DashboardPage() {
             </div>
           )}
 
-          <AttendantsTable
-            attendants={attendants}
-            now={now}
-            onSelectAttendant={setSelectedCode}
-          />
+          {isLoading ? (
+            <div className="py-10 text-center text-sm text-zinc-400">
+              Carregando...
+              {/* TODO: substituir por skeleton */}
+            </div>
+          ) : (
+            <AttendantsTable
+              attendants={attendants}
+              now={now}
+              onSelectAttendant={setSelectedCode}
+            />
+          )}
 
           <AttendantActionsModal
             attendant={selectedAttendant}
