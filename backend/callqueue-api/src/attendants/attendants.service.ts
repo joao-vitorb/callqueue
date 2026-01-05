@@ -2,141 +2,81 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-} from '@nestjs/common';
-import type { AttendantRole } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { nowMs } from '../shared/utils/time';
-import {
-  pauseAttendant,
-  resumeAttendant,
-  finishCall,
-} from '../domain/attendantTransitions';
-import { startCall as startCallTransition } from '../domain/attendantTransitions';
-import { selectNextAttendantCodeForCall } from '../domain/callRouting';
+} from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { EventsService } from "../events/events.service";
+import { generateUniqueName } from "../shared/utils/names";
+import { getNextAvailableCode } from "../shared/utils/attendantCode";
+import { nowMs } from "../shared/utils/time";
 
 @Injectable()
-export class ActionsService {
-  constructor(private readonly prisma: PrismaService) {}
+export class AttendantsService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly events: EventsService
+  ) {}
 
-  async startCall() {
-    const now = nowMs();
-
-    return this.prisma.$transaction(async (tx) => {
-      const attendants = await tx.attendant.findMany({
-        select: {
-          code: true,
-          role: true,
-          status: true,
-          idleSince: true,
-          handledCalls: true,
-          statusSince: true,
-          idleMs: true,
-          callMs: true,
-          pauseMs: true,
-        },
-      });
-
-      const nextCode = selectNextAttendantCodeForCall(attendants, now);
-      if (!nextCode) return { ok: false, reason: 'NO_AVAILABLE_ATTENDANT' };
-
-      const current = await tx.attendant.findUnique({
-        where: { code: nextCode },
-      });
-      if (!current) throw new NotFoundException('Atendente não encontrado.');
-
-      if (current.status !== 'AVAILABLE') {
-        // outro request pode ter pegado antes
-        return { ok: false, reason: 'NOT_AVAILABLE' };
-      }
-
-      const updated = startCallTransition(current, now);
-
-      await tx.attendant.update({
-        where: { code: nextCode },
-        data: {
-          status: updated.status,
-          statusSince: updated.statusSince,
-          idleMs: updated.idleMs,
-        },
-      });
-
-      return { ok: true, code: nextCode };
-    });
+  async list() {
+    return this.prisma.attendant.findMany({ orderBy: { code: "asc" } });
   }
 
-  async pause(code: string) {
-    const now = nowMs();
-
-    const attendant = await this.prisma.attendant.findUnique({
-      where: { code },
+  async createRandom() {
+    const existing = await this.prisma.attendant.findMany({
+      select: { code: true, firstName: true, lastName: true },
+      orderBy: { code: "asc" },
     });
-    if (!attendant) throw new NotFoundException('Atendente não encontrado.');
 
-    const updated = pauseAttendant(attendant, now);
+    const nextCode = getNextAvailableCode(existing);
+    if (!nextCode) {
+      throw new BadRequestException("Limite máximo de 50 atendentes atingido.");
+    }
 
-    return this.prisma.attendant.update({
-      where: { code },
+    const name = generateUniqueName(
+      existing.map((a) => ({ firstName: a.firstName, lastName: a.lastName }))
+    );
+
+    const createdAt = nowMs();
+
+    const created = await this.prisma.attendant.create({
       data: {
-        status: updated.status,
-        statusSince: updated.statusSince,
+        code: nextCode,
+        firstName: name.firstName,
+        lastName: name.lastName,
+        status: "AVAILABLE",
+        role: "DEFAULT",
+        joinedAt: createdAt,
+        statusSince: createdAt,
+        idleSince: createdAt,
+        idleMs: 0n,
+        callMs: 0n,
+        pauseMs: 0n,
+        handledCalls: 0,
       },
     });
+
+    this.events.emit({ type: "ATTENDANTS_CHANGED" });
+
+    return created;
   }
 
-  async resume(code: string) {
-    const now = nowMs();
+  async remove(code: string) {
+    if (!code || code.trim().length === 0) {
+      throw new BadRequestException("Código inválido.");
+    }
 
-    const attendant = await this.prisma.attendant.findUnique({
+    const exists = await this.prisma.attendant.findUnique({
       where: { code },
+      select: { code: true },
     });
-    if (!attendant) throw new NotFoundException('Atendente não encontrado.');
 
-    const updated = resumeAttendant(attendant, now);
+    if (!exists) {
+      throw new NotFoundException("Atendente não encontrado.");
+    }
 
-    return this.prisma.attendant.update({
-      where: { code },
-      data: {
-        status: updated.status,
-        statusSince: updated.statusSince,
-        pauseMs: updated.pauseMs,
-      },
-    });
-  }
+    await this.prisma.attendant.delete({ where: { code } });
 
-  async finishCall(code: string) {
-    const now = nowMs();
+    this.events.emit({ type: "ATTENDANTS_CHANGED" });
 
-    const attendant = await this.prisma.attendant.findUnique({
-      where: { code },
-    });
-    if (!attendant) throw new NotFoundException('Atendente não encontrado.');
-
-    const updated = finishCall(attendant, now);
-
-    return this.prisma.attendant.update({
-      where: { code },
-      data: {
-        status: updated.status,
-        statusSince: updated.statusSince,
-        callMs: updated.callMs,
-        handledCalls: updated.handledCalls,
-        idleSince: updated.idleSince,
-        idleMs: updated.idleMs,
-      },
-    });
-  }
-
-  async setRole(code: string, role: AttendantRole) {
-    if (!role) throw new BadRequestException('Role inválida.');
-
-    const attendant = await this.prisma.attendant.findUnique({
-      where: { code },
-    });
-    if (!attendant) throw new NotFoundException('Atendente não encontrado.');
-
-    return this.prisma.attendant.update({
-      where: { code },
-      data: { role },
-    });
+    return { ok: true };
   }
 }
