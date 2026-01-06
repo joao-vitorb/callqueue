@@ -16,8 +16,6 @@ type ToastState = {
   message: string;
 };
 
-type SseStatus = "open" | "reconnecting";
-
 function Toast({ state, onClose }: { state: ToastState; onClose: () => void }) {
   if (!state.open) return null;
 
@@ -88,7 +86,6 @@ export default function DashboardPage() {
     message: "",
   });
 
-  const [sseStatus, setSseStatus] = useState<SseStatus>("reconnecting");
   const toastTimerRef = useRef<number | null>(null);
 
   const now = useNow({ intervalMs: 1000 });
@@ -133,9 +130,6 @@ export default function DashboardPage() {
     const disconnect = connectEvents({
       onMessage: (evt) => {
         if (evt.type === "ATTENDANTS_CHANGED") refresh();
-      },
-      onStatusChange: (status) => {
-        setSseStatus(status);
       },
     });
 
@@ -212,11 +206,7 @@ export default function DashboardPage() {
       <div className="mx-auto w-full max-w-5xl px-4 py-10">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-semibold tracking-tight">
-                CallQueue
-              </h1>
-            </div>
+            <h1 className="text-3xl font-semibold tracking-tight">CallQueue</h1>
 
             <p className="text-sm text-zinc-300">
               Sistema de gerenciamento de filas e atendentes
