@@ -1,14 +1,16 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { BigIntSerializationInterceptor } from './shared/interceptors/bigint.interceptor';
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
+import { BigIntSerializationInterceptor } from "./shared/interceptors/bigint.interceptor";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.enableShutdownHooks();
+
   app.useGlobalInterceptors(new BigIntSerializationInterceptor());
 
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: "http://localhost:5173",
   });
 
   await app.listen(3000);
