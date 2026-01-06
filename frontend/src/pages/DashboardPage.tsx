@@ -6,6 +6,7 @@ import AttendantActionsModal from "./components/AttendantActionsModal.tsx";
 import { useNow } from "../shared/hooks/useNow.ts";
 import { callqueueApi } from "../shared/api/callqueueApi.ts";
 import { connectEvents } from "../shared/api/events.ts";
+import AboutModal from "./components/AboutModal.tsx";
 
 export default function DashboardPage() {
   const [attendants, setAttendants] = useState<Attendant[]>([]);
@@ -126,14 +127,26 @@ export default function DashboardPage() {
 
   const maxReached = attendants.length >= 50;
 
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50">
       <div className="mx-auto w-full max-w-5xl px-4 py-10">
-        <header className="space-y-2">
-          <h1 className="text-3xl font-semibold tracking-tight">CallQueue</h1>
-          <p className="text-sm text-zinc-300">
-            Sistema de gerenciamento de filas e atendentes
-          </p>
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-semibold tracking-tight">CallQueue</h1>
+            <p className="text-sm text-zinc-300">
+              Sistema de gerenciamento de filas e atendentes
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsAboutOpen(true)}
+            className="h-10 rounded-xl border border-white/10 bg-white/5 px-4 text-sm font-semibold text-zinc-50 hover:bg-white/10 cursor-pointer"
+          >
+            O que é o CallQueue?
+          </button>
         </header>
 
         <main className="mt-8 rounded-2xl border border-white/10 bg-zinc-900/40 p-4 shadow-sm">
@@ -193,6 +206,11 @@ export default function DashboardPage() {
               if (!selectedAttendant) return;
               handleSetRole(selectedAttendant.code, role);
             }}
+          />
+
+          <AboutModal
+            open={isAboutOpen}
+            onClose={() => setIsAboutOpen(false)}
           />
         </main>
       </div>

@@ -21,7 +21,7 @@ export default function DashboardToolbar({
       <div className="flex gap-2">
         <button
           type="button"
-          className="rounded-xl bg-white px-3 py-2 text-sm font-semibold text-zinc-950 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-xl bg-white px-3 py-2 text-sm font-semibold text-zinc-950 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
           onClick={onAddAttendant}
           disabled={disableAdd}
         >
@@ -30,7 +30,7 @@ export default function DashboardToolbar({
 
         <button
           type="button"
-          className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm font-semibold text-zinc-50 transition hover:bg-white/10"
+          className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm font-semibold text-zinc-50 transition hover:bg-white/10 cursor-pointer"
           onClick={onStartCall}
         >
           Realizar ligação
