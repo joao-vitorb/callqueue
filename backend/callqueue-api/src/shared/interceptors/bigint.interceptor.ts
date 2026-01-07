@@ -9,9 +9,14 @@ import { map } from "rxjs/operators";
 
 function toJsonFriendly(value: unknown): unknown {
   if (typeof value === "bigint") {
-    // TODO: se ultrapassar MAX_SAFE_INTEGER, retornar string
-    const asNumber = Number(value);
-    return Number.isSafeInteger(asNumber) ? asNumber : value.toString();
+    const max = BigInt(Number.MAX_SAFE_INTEGER);
+    const min = -max;
+
+    if (value >= min && value <= max) {
+      return Number(value);
+    }
+
+    return value.toString();
   }
 
   if (Array.isArray(value)) {
