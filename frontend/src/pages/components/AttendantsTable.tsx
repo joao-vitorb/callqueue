@@ -1,10 +1,10 @@
-import type { Attendant } from "../../domain/attendant.ts";
-import { ROLE_LABEL, STATUS_LABEL } from "../../domain/attendant.ts";
-import { getCurrentStatusDurationMs } from "../../domain/attendantDuration.ts";
-import { getLiveIdleMs } from "../../domain/attendantLive.ts";
-import { formatDuration } from "../../shared/utils/time.ts";
-import RoleIcon from "./RoleIcon.tsx";
-import FirstCallBadge from "./FirstCallBadge.tsx";
+import type { Attendant } from "../../domain/attendant";
+import { ROLE_LABEL, STATUS_LABEL } from "../../domain/attendant";
+import { getCurrentStatusDurationMs } from "../../domain/attendantDuration";
+import { getLiveIdleMs } from "../../domain/attendantLive";
+import { formatDuration } from "../../shared/utils/time";
+import RoleIcon from "./RoleIcon";
+import FirstCallBadge from "./FirstCallBadge";
 
 function getStatusBadgeClasses(status: Attendant["status"]): string {
   if (status === "AVAILABLE") return "bg-[#83fa70] text-zinc-950";
@@ -16,12 +16,14 @@ type Props = {
   attendants: Attendant[];
   now: number;
   onSelectAttendant: (attendantCode: string) => void;
+  onAddAttendant?: () => void;
 };
 
 export default function AttendantsTable({
   attendants,
   now,
   onSelectAttendant,
+  onAddAttendant,
 }: Props) {
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10">
@@ -34,6 +36,9 @@ export default function AttendantsTable({
             <th className="px-4 py-3">Ociosidade</th>
             <th className="px-4 py-3">Duração</th>
             <th className="px-4 py-3">Ação</th>
+          </tr>
+          <tr>
+            <td colSpan={6} className="h-px bg-white/10 p-0" />
           </tr>
         </thead>
 
@@ -73,11 +78,11 @@ export default function AttendantsTable({
                   </span>
                 </td>
 
-                <td className="px-4 py-3 text-sm font-mono text-zinc-200">
+                <td className="px-4 py-3 font-mono text-sm text-zinc-200">
                   {showIdle ? formatDuration(idleMs) : ""}
                 </td>
 
-                <td className="px-4 py-3 text-sm font-mono text-zinc-200">
+                <td className="px-4 py-3 font-mono text-sm text-zinc-200">
                   {showDuration ? formatDuration(durationMs) : ""}
                 </td>
 
@@ -96,12 +101,21 @@ export default function AttendantsTable({
 
           {attendants.length === 0 && (
             <tr>
-              <td
-                colSpan={6}
-                className="px-4 py-10 text-center text-sm text-zinc-400"
-              >
-                Nenhum atendente logado.
-                {/* TODO: Exibir CTA para adicionar atendente */}
+              <td colSpan={6} className="px-4 py-12 text-center">
+                <div className="mx-auto flex max-w-md flex-col items-center gap-3">
+                  <p className="text-sm text-zinc-400">
+                    Nenhum atendente logado.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={onAddAttendant}
+                    disabled={!onAddAttendant}
+                    className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-zinc-50 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Adicionar atendente
+                  </button>
+                </div>
               </td>
             </tr>
           )}

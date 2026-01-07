@@ -258,6 +258,7 @@ export default function DashboardPage() {
               attendants={attendants}
               now={now}
               onSelectAttendant={setSelectedCode}
+              onAddAttendant={handleAddAttendant}
             />
           )}
 
