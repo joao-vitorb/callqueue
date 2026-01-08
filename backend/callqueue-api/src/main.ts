@@ -4,16 +4,16 @@ import { BigIntSerializationInterceptor } from "./shared/interceptors/bigint.int
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const port = process.env.PORT || 4000;
 
-  app.enableShutdownHooks();
+  const port = Number(process.env.PORT ?? 3000);
 
   app.useGlobalInterceptors(new BigIntSerializationInterceptor());
 
   app.enableCors({
-    origin: "https://callqueue-backend.onrender.com",
+    origin: ["http://localhost:5173", "https://callqueue-frontend.onrender.com"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   });
 
-  await app.listen(3000);
+  await app.listen(port, "0.0.0.0");
 }
 bootstrap();
