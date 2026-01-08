@@ -46,7 +46,7 @@ export const callqueueApi = {
   },
 
   async logout(code: string): Promise<void> {
-    await http.del<{ ok: boolean }>(`/attendants/${code}`);
+    await http.del<{ ok: boolean }>(`/attendants/${encodeURIComponent(code)}`);
   },
 
   async startCall(): Promise<{ ok: boolean; code?: string; reason?: string }> {
@@ -54,24 +54,31 @@ export const callqueueApi = {
   },
 
   async pause(code: string): Promise<Attendant> {
-    const data = await http.post<ApiAttendant>(`/actions/pause/${code}`);
+    const data = await http.post<ApiAttendant>(
+      `/actions/pause/${encodeURIComponent(code)}`
+    );
     return mapApiToDomain(data);
   },
 
   async resume(code: string): Promise<Attendant> {
-    const data = await http.post<ApiAttendant>(`/actions/resume/${code}`);
+    const data = await http.post<ApiAttendant>(
+      `/actions/resume/${encodeURIComponent(code)}`
+    );
     return mapApiToDomain(data);
   },
 
   async finishCall(code: string): Promise<Attendant> {
-    const data = await http.post<ApiAttendant>(`/actions/finish-call/${code}`);
+    const data = await http.post<ApiAttendant>(
+      `/actions/finish-call/${encodeURIComponent(code)}`
+    );
     return mapApiToDomain(data);
   },
 
   async setRole(code: string, role: AttendantRole): Promise<Attendant> {
-    const data = await http.post<ApiAttendant>(`/actions/set-role/${code}`, {
-      role,
-    });
+    const data = await http.post<ApiAttendant>(
+      `/actions/set-role/${encodeURIComponent(code)}`,
+      { role }
+    );
     return mapApiToDomain(data);
   },
 };
