@@ -19,11 +19,11 @@ O sistema foi desenvolvido com React, NestJS, Typescript, TailwindCSS, Prisma e 
 
 ## Página Principal
 
-add imagem
+<img width="1236" height="907" alt="callqueue1" src="https://github.com/user-attachments/assets/80f56b3f-f56a-4430-97a1-62a76eb552f4" />
 
 ## Modal de Ações
 
-add imagem
+<img width="1237" height="906" alt="callqueue2" src="https://github.com/user-attachments/assets/0f37baea-5678-4d88-9158-2b1b6a00f00d" />
 
 ---
 
