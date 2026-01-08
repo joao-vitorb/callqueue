@@ -1,6 +1,8 @@
-const API_URL = import.meta.env.VITE_API_URL as string;
+const API_URL =
+  (import.meta.env.VITE_API_URL as string | undefined) ??
+  "http://localhost:3000";
 
-type EventPayload = { type: string };
+type EventPayload = { type: string; [k: string]: unknown };
 
 export type EventsConnectionStatus = "open" | "reconnecting";
 
@@ -9,7 +11,10 @@ type ConnectEventsOptions = {
   onStatusChange?: (status: EventsConnectionStatus) => void;
 };
 
-export function connectEvents({ onMessage, onStatusChange }: ConnectEventsOptions) {
+export function connectEvents({
+  onMessage,
+  onStatusChange,
+}: ConnectEventsOptions) {
   const es = new EventSource(`${API_URL}/events`);
 
   es.onopen = () => {
@@ -22,7 +27,7 @@ export function connectEvents({ onMessage, onStatusChange }: ConnectEventsOption
       onMessage(payload);
     } catch (err) {
       if (import.meta.env.DEV) {
-        console.error("[SSE] Erro ao fazer parse do evento:", evt.data, err);
+        console.error("[SSE] Erro ao fazer parse:", evt.data, err);
       }
     }
   };
@@ -31,7 +36,5 @@ export function connectEvents({ onMessage, onStatusChange }: ConnectEventsOption
     onStatusChange?.("reconnecting");
   };
 
-  return () => {
-    es.close();
-  };
+  return () => es.close();
 }
