@@ -7,7 +7,7 @@ O sistema foi desenvolvido com React, NestJS, Typescript, TailwindCSS, Prisma e 
 
 ## Acesse
 
-- CallQueue: add link
+- CallQueue: https://callqueue-frontend.onrender.com/
 
 ---
 
